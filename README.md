@@ -22,9 +22,9 @@ pip install vector-plot-extractor
 ## Usage
 To execute the main UI, run this in your terminal
 ```
-    vpextract path/to/figure/file
+vpextract path/to/figure/file
 ```
 To import this package in a Python script:
 ```Python
-    import vpextractor
+import vpextractor
 ```
