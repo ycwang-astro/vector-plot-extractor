@@ -1,0 +1,19 @@
+# This file has been modified from an excerpt of the default `matplotlibrc` file 
+# within the Matplotlib package. 
+# See e.g. https://matplotlib.org/stable/users/explain/customizing.html#the-matplotlibrc-file
+
+keymap.fullscreen: ctrl+f   # toggling
+keymap.home: home        # home or reset mnemonic
+keymap.back: left, backspace, MouseButton.BACK  # forward / backward keys
+keymap.forward: right, MouseButton.FORWARD      # for quick navigation
+keymap.pan:                   # pan mnemonic
+keymap.zoom:                  # zoom mnemonic
+keymap.save: ctrl+s         # saving current figure
+keymap.help: f1                # display help about active tools
+keymap.quit: ctrl+w, cmd+w   # close the current figure
+keymap.quit_all:               # close all figures
+keymap.grid:                  # switching on/off major grids in current axes
+keymap.grid_minor:            # switching on/off minor grids in current axes
+keymap.yscale:                # toggle scaling of y-axes ('log'/'linear')
+keymap.xscale:             # toggle scaling of x-axes ('log'/'linear')
+keymap.copy: ctrl+c, cmd+c     # copy figure to clipboard
