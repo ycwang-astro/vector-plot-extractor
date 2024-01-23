@@ -39,5 +39,8 @@ Changelog = "https://github.com/ycwang-astro/vector-plot-extractor"
 [tool.setuptools]
 packages = ["vpextractor"]
 
+[tool.setuptools.package-data]
+vpextractor = ["*.mplstyle"]
+
 [tool.setuptools.dynamic]
 version = {attr = "vpextractor.__version__"}
