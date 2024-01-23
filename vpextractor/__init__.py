@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-``vector-plot-extractor``: tools of extracting data from vector plots
+``vector-plot-extractor``: tools for extracting data from vector plots
 
 To execute the main UI, run this in your terminal::
     
