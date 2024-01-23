@@ -11,7 +11,7 @@ dependencies = [
     "pymupdf",
 ]
 authors = [
-    {name="Yu-Chen Wang", email=""},
+    {name="Yu-Chen Wang", email="ycwang-astro@users.noreply.github.com"},
 ]
 description = "tools for extracting data from vector plots"
 readme = "README.md"
@@ -34,3 +34,10 @@ Documentation = "https://github.com/ycwang-astro/vector-plot-extractor"
 Repository = "https://github.com/ycwang-astro/vector-plot-extractor.git"
 Issues = "https://github.com/ycwang-astro/vector-plot-extractor/issues"
 Changelog = "https://github.com/ycwang-astro/vector-plot-extractor"
+
+
+[tool.setuptools]
+packages = ["vpextractor"]
+
+[tool.setuptools.dynamic]
+version = {attr = "vpextractor.__version__"}

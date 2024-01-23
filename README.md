@@ -10,6 +10,7 @@ This package mainly depends on the following packages:
 - matplotlib
 - numpy
 - pymupdf
+
 These will be automatically installed when running `pip install`.
 
 ## Installation
