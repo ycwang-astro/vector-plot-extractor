@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vector-plot-extractor"
+dynamic = ["version"]
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pymupdf",
+]
+authors = [
+    {name="Yu-Chen Wang", email=""},
+]
+description = "tools for extracting data from vector plots"
+readme = "README.md"
+keywords = ["vector graphic", "vector plot", "extractor", "digitizer"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Intended Audience :: Science/Research",
+]
+
+[project.optional-dependencies]
+
+[project.scripts]
+vpextract = "vpextractor:vpextract"
+
+[project.urls]
+Homepage = "https://github.com/ycwang-astro/vector-plot-extractor"
+Documentation = "https://github.com/ycwang-astro/vector-plot-extractor"
+Repository = "https://github.com/ycwang-astro/vector-plot-extractor.git"
+Issues = "https://github.com/ycwang-astro/vector-plot-extractor/issues"
+Changelog = "https://github.com/ycwang-astro/vector-plot-extractor"
