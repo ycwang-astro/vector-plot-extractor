@@ -33,7 +33,7 @@ Homepage = "https://github.com/ycwang-astro/vector-plot-extractor"
 Documentation = "https://github.com/ycwang-astro/vector-plot-extractor"
 Repository = "https://github.com/ycwang-astro/vector-plot-extractor.git"
 Issues = "https://github.com/ycwang-astro/vector-plot-extractor/issues"
-Changelog = "https://github.com/ycwang-astro/vector-plot-extractor"
+Changelog = "https://github.com/ycwang-astro/vector-plot-extractor/blob/master/CHANGELOG.md"
 
 
 [tool.setuptools]
