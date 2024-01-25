@@ -9,6 +9,7 @@
 - add `DataExplorer.plot()`
 
 ## 0.1.2
+### Urgent bug fix
 - fix error of scatter positions induced by duplication in coords
 
 **Notes**. A bug in version 0.1.1 causes minor errors in the extracted scatter data. If you have used 0.1.1 version, follow the below steps to fix it:
