@@ -15,6 +15,7 @@ import os
 import json
 from matplotlib.widgets import TextBox
 from itertools import chain
+from . import __version__
 
 class ConsistencyError(Exception):
     pass
@@ -394,7 +395,11 @@ class DataExtractor(BaseEventHandler):
         self.xscale = None
         self.yscale = None
         
-        self.export_data = {}
+        self.export_data = {
+            'meta': {
+                'vpextractor_version': __version__,
+                },
+            }
         
         self.axes = {} # data axes information, not real axes for plot
         self._ca = None # currect data axis number 

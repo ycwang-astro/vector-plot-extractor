@@ -19,6 +19,11 @@ To install this package, you can simply use `pip`:
 pip install vector-plot-extractor
 ```
 
+If you would like to try the latest development version, you may directly install from the project repository by:
+```
+pip install git+https://github.com/ycwang-astro/vector-plot-extractor.git
+```
+
 ## Usage
 To execute the main UI, run this in your terminal
 ```

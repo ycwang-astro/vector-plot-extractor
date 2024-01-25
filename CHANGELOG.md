@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.1.3
+### Bugs fixed
+- Fix "bottom-left" position of Matplotlib `Rectangle`. This bug affects `.sel.obj` files, and results in an offset in all rectangles in the plot. 2nd step need to be re-run ("Re-selecting") to fix `.sel.obj`. It seems that other files, including the exported data, are not affected by this bug.
+
+### Modifications
+- `.out` file includes package version that exports the data
+- add `DataExplorer.plot()`
+
 ## 0.1.2
 - fix error of scatter positions induced by duplication in coords
 
