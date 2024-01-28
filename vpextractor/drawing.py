@@ -10,9 +10,11 @@ parse drawings, converting them to matplotlib objects
 import numpy as np
 from matplotlib.patches import Polygon, Rectangle, PathPatch, Patch
 from matplotlib.lines import Line2D
-from matplotlib.collections import PatchCollection, PathCollection
+from matplotlib.collections import PatchCollection, PathCollection, LineCollection
 from matplotlib.path import Path
+from matplotlib.colors import to_rgba
 import matplotlib.pyplot as plt
+import warnings
 from copy import copy
 from .filter import select_paths
 from .utils import dedup
@@ -21,10 +23,10 @@ def add(ax, artist):
     # add artist to ax given different types
     if isinstance(artist, Patch):
         ax.add_patch(artist)
-    elif isinstance(artist, Line2D):
+    elif isinstance(artist, (Line2D)):
         ax.add_line(artist)
-    elif isinstance(artist, PatchCollection):
-        ax.add_artist(artist)
+    elif isinstance(artist, (PatchCollection, LineCollection)):
+        ax.add_collection(artist)
     # elif isinstance(artist, PathCollection):
     #     ax.add_artist(artist)
     else:
@@ -32,11 +34,14 @@ def add(ax, artist):
 
 def get_color(artist):
     # get color from artist
-    if isinstance(artist, Line2D):
-        return {'color': artist.get_color()}
+    if isinstance(artist, (Line2D)):
+        return {'color': (artist.get_color())}
     elif isinstance(artist, PatchCollection):
         return {'facecolor': dedup(artist.get_facecolor()),
                 'edgecolor': dedup(artist.get_edgecolor())}
+    elif isinstance(artist, LineCollection): # this is a collection of lines as markers of scatter
+        return {'facecolor': dedup(artist.get_color()),
+                'edgecolor': None}
     else:
         raise TypeError(type(artist))
 
@@ -294,8 +299,22 @@ def group_paths(paths, typestr=None, markers=None, marker_getter='mean', mode='t
                 idx = idx[0]
     
             if scatter and (typ != 's' or idx != idx0): # ends a group of scatter
+                artists_type = list({type(a) for a in scatter_artists})
+                if len(artists_type) > 1:
+                    raise TypeError(f'expected one single type for a collection of scatter, got {artists_type}')
+                artists_type = artists_type[0]
+                if artists_type == Line2D:
+                    warnings.warn(f'a group of {len(scatter_artists)} line-like objects marked as scatters')
+                    lc_kwargs = { # LineCollection kwargs
+                        'linewidths': [l.get_linewidth() for l in scatter_artists],
+                        'colors': [to_rgba(l.get_color(), l.get_alpha()) for l in scatter_artists],
+                        'linestyles': [l.get_linestyle() for l in scatter_artists],
+                        }
+                    collection = LineCollection((a.get_xydata() for a in scatter_artists), **lc_kwargs)
+                else:
+                    collection = PatchCollection(scatter_artists, match_original=True)
                 objects['s'].append({
-                    'artist': PatchCollection(scatter_artists, match_original=True), # todo: what if user mark line as scatter? should disallow it!
+                    'artist': collection, # todo: what if user mark line as scatter? should disallow it!
                     'coords': np.array(scatter_coords).T})
                 scatter = False
                 idx0 = -1

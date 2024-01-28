@@ -6,6 +6,8 @@
 
 ### Improvements
 - Supports paths combining type 'c' (Bezier curve) and 'l' (line). (Fixes [issue #1](https://github.com/ycwang-astro/vector-plot-extractor/issues/1))
+- Show information if find nothing to extract
+- Supports line-like scatter markers; show warning if labeling line-like as scatter
 
 ### Modifications
 - `.out` file includes package version that exports the data

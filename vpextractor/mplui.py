@@ -8,7 +8,7 @@ Created on Thu Jan 18 19:28:30 2024
 import numpy as np
 from .filter import select_paths, rect_filter_objects, get_filtered_objects
 from copy import copy, deepcopy
-from .drawing import add, plot_objects, get_color
+from .drawing import add, plot_objects, get_color, Line2D
 import matplotlib.pyplot as plt
 from .utils import pause_and_warn, save_pickle, annotate, dedup
 import os
@@ -230,15 +230,20 @@ class ElementIdentifier(BaseEventHandler):
                 self.match_mode = event.key
                 self.matched_idxs = select_paths(self.path_feature, self.path_features, modes=self.match_mode)
                 self.ax['group'].clear()
+                warntxt = ''
                 for i, artist in enumerate(self.artists):
                     if i in self.matched_idxs:
                         add(self.ax['group'], copy(artist))
+                        # print(artist, isinstance(artist, Line2D))
+                        if self.type == 's' and not warntxt and isinstance(artist, Line2D):
+                            # print('here')
+                            warntxt = '\n(WARNING: elements labelled as "scatter", but at least one is line-like)'
                 self.ax['group'].set_title(f'found {len(self.matched_idxs)}')
                 self.ax['group'].autoscale(True)
                 self.ax['group'].invert_yaxis()
                 # self.ax['group'].set_xlim(self.ax['main'].get_xlim())
                 # self.ax['group'].set_ylim(self.ax['main'].get_ylim())
-                self.fig.suptitle('press any key to continue or [C]ancel')
+                self.fig.suptitle(f'press any key to continue or [C]ancel{warntxt}')
                 self.state = 3
                     
             elif self.state == 3:

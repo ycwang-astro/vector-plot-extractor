@@ -18,6 +18,10 @@ import logging
 from argparse import ArgumentParser
 plt.style.use('vpextractor.disable_key')
 
+class EmptyPathError(Exception):
+    '''The `paths` is empty.'''
+    pass
+
 def element_identifier(paths):
     fig, ax = plt.subplot_mosaic(
         [['main', 'marker'],
@@ -63,6 +67,9 @@ def runall(pdf_path):
     if not os.path.exists(drw_path):
         pdf2drawings(pdf_path)
     paths = load_pickle(drw_path)
+    
+    if len(paths) == 0:
+        raise EmptyPathError(f"Found nothing to extract from '{pdf_path}': is it a vector image?")
     
     ei_files = ['.mkr', '.typ']
     if any(os.path.exists(pdf_path + ei_file) for ei_file in ei_files):
