@@ -4,6 +4,9 @@
 ### Bugs fixed
 - Fix "bottom-left" position of Matplotlib `Rectangle`. This bug affects `.sel.obj` files, and results in an offset in all rectangles in the plot. 2nd step need to be re-run ("Re-selecting") to fix `.sel.obj`. It seems that other files, including the exported data, are not affected by this bug.
 
+### Improvements
+- Supports paths combining type 'c' (Bezier curve) and 'l' (line). (Fixes [issue #1](https://github.com/ycwang-astro/vector-plot-extractor/issues/1))
+
 ### Modifications
 - `.out` file includes package version that exports the data
 - add `DataExplorer.plot()`

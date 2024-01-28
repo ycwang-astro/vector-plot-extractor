@@ -61,55 +61,54 @@ def parse_path(path):
     '''
     items = path['items']
     item_type = np.unique([item[0] for item in items])
-    if len(item_type) > 1:
-        raise NotImplementedError()
-    else: 
-        item_type = str(item_type[0])
-        coords = get_coords(items)
-        patch_kwargs = dict(
-            fill=False,
-            closed=path['closePath'],
-            )
-        if 's' in path['type']: # stroke
-            patch_kwargs.update(dict(
-                ec=path['color'], # edgecolor
-                alpha=path['stroke_opacity'],
-                lw=path['width'], # linewidth
-                # closed=path['closePath'], 
-                ls=get_ls(path['dashes']), # linestyle
-                ))
-        if 'f' in path['type']: # fill
-            patch_kwargs.update(dict(
-                fill=True,
-                fc=path['fill'], # facecolor
-                alpha=path['fill_opacity'],
-                ))
-        if item_type == 'c':  # Bezier curve
-            itempath = get_curv_path(items)
-            patch_kwargs.pop('closed') # TODO: manually handle this: add the starting point at the end (if not)
-            artist = PathPatch(itempath, **patch_kwargs)
-        elif item_type == 'l': # line
-            if (path['closePath'] or 'f' in path['type']) and len(coords[0]) > 2:  # closed path or fill, and more than 2 pts (if only 2 pts, it is still a line)
-                artist = Polygon(np.vstack(coords).T, **patch_kwargs)
-            else: # not a closed path, and not fill: seems to be a line
-                patch_kwargs.pop('closed') 
-                patch_kwargs.pop('fill') 
-                if 'fc' in patch_kwargs:
-                    patch_kwargs.pop('fc')
-                patch_kwargs['color'] = patch_kwargs.pop('ec') 
-                # patch_kwargs['lw'] = min((2, patch_kwargs['lw']))
-                x, y = coords
-                artist = Line2D(x, y, **patch_kwargs) #, picker=True, pickradius=5
-        elif item_type == 're':
-            assert len(items) == 1
-            item = items[0]
-            rect = item[1]
-            patch_kwargs.pop('closed') # TODO: manually handle this: add the starting point at the end (if not)
-            # notes: the coordinates for fitz.fitz.Rect is UPSIDE DOWN, so `rect.tl` ("top-left") is the real "bottom-left" (smaller x, smaller y) in Matplotlib
-            # see https://pymupdf.readthedocs.io/en/latest/rect.html
-            artist = Rectangle(rect.tl, rect.width, rect.height, **patch_kwargs)
-        elif item_type == 'qu':
+    item_type = set(str(i) for i in item_type)
+    coords = get_coords(items)
+    patch_kwargs = dict(
+        fill=False,
+        closed=path['closePath'],
+        )
+    if 's' in path['type']: # stroke
+        patch_kwargs.update(dict(
+            ec=path['color'], # edgecolor
+            alpha=path['stroke_opacity'],
+            lw=path['width'], # linewidth
+            # closed=path['closePath'], 
+            ls=get_ls(path['dashes']), # linestyle
+            ))
+    if 'f' in path['type']: # fill
+        patch_kwargs.update(dict(
+            fill=True,
+            fc=path['fill'], # facecolor
+            alpha=path['fill_opacity'],
+            ))
+    if item_type in [{'c'}, {'c', 'l'}]:  # Bezier curve, or combination of Bezier curve & line
+        itempath = get_curv_path(items)
+        patch_kwargs.pop('closed') # TODO: manually handle this: add the starting point at the end (if not)
+        artist = PathPatch(itempath, **patch_kwargs)
+    elif item_type == {'l'}: # line
+        if (path['closePath'] or 'f' in path['type']) and len(coords[0]) > 2:  # closed path or fill, and more than 2 pts (if only 2 pts, it is still a line)
             artist = Polygon(np.vstack(coords).T, **patch_kwargs)
+        else: # not a closed path, and not fill: seems to be a line
+            patch_kwargs.pop('closed') 
+            patch_kwargs.pop('fill') 
+            if 'fc' in patch_kwargs:
+                patch_kwargs.pop('fc')
+            patch_kwargs['color'] = patch_kwargs.pop('ec') 
+            # patch_kwargs['lw'] = min((2, patch_kwargs['lw']))
+            x, y = coords
+            artist = Line2D(x, y, **patch_kwargs) #, picker=True, pickradius=5
+    elif item_type == {'re'}:
+        assert len(items) == 1
+        item = items[0]
+        rect = item[1]
+        patch_kwargs.pop('closed') # TODO: manually handle this: add the starting point at the end (if not)
+        # notes: the coordinates for fitz.fitz.Rect is UPSIDE DOWN, so `rect.tl` ("top-left") is the real "bottom-left" (smaller x, smaller y) in Matplotlib
+        # see https://pymupdf.readthedocs.io/en/latest/rect.html
+        artist = Rectangle(rect.tl, rect.width, rect.height, **patch_kwargs)
+    elif item_type == {'qu'}:
+        artist = Polygon(np.vstack(coords).T, **patch_kwargs)
+    else:
+        raise NotImplementedError(f'not implemented for item_type {item_type}')
     
     x, y = coords
     x, y = np.array(x), np.array(y)
@@ -117,7 +116,7 @@ def parse_path(path):
     x_rel, y_rel = x[rel_pt], y[rel_pt]
     path_feature = { # features of the path used to identify similar paths
         'rel_pos': np.array([x - x_rel, y - y_rel]), # relative positions
-        'type': item_type,
+        'type': '+'.join(item_type),
         'color': np.array(path['color']),
         'fill': np.array(path['fill']),
         }
@@ -212,12 +211,14 @@ def get_coords(items):
     return xs, ys
 
 def get_curv_path(items):
+    # get matplotlib.path.Path object
+    # this should not be used if the item type for a path is only 'l': should treat is as normal Polygon or Line2D
     path_data = []
     for item in items:
+        firstcode = Path.LINETO if len(path_data) > 0 else Path.MOVETO
         if item[0] == 'c': # Bezier curve
             pts = item[1:]
             if len(pts) == 4: # cubic
-                firstcode = Path.LINETO if len(path_data) > 0 else Path.MOVETO
                 path_data += [
                     (firstcode, (pts[0].x, pts[0].y)),
                     (Path.CURVE4, (pts[1].x, pts[1].y)),
@@ -225,9 +226,16 @@ def get_curv_path(items):
                     (Path.CURVE4, (pts[3].x, pts[3].y)),
                     ]
             else:
-                raise NotImplementedError()
+                raise NotImplementedError('only implemented cubic Bezier curve')
+        elif item[0] == 'l': # line
+            pts = item[1:]
+            assert len(pts) == 2
+            path_data += [
+                (firstcode, (pts[0].x, pts[0].y)),
+                (Path.LINETO, (pts[1].x, pts[1].y)),
+                ]
         else:
-            raise ValueError
+            raise ValueError(f"unexpected item type '{item[0]}'")
     
     codes, verts = zip(*path_data)
     path = Path(verts, codes)
