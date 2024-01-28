@@ -195,7 +195,7 @@ def get_coords(items):
             ys += [y0, y0, y1, y1, y0]
         elif item[0] == 'qu': # quad
             quad = item[1]
-            pts = quad
+            pts = [quad.ul, quad.ur, quad.lr, quad.ll]
             for pt in pts:
                 if (x, y) == (pt.x, pt.y):
                     continue
@@ -219,10 +219,12 @@ def get_curv_path(items):
     # get matplotlib.path.Path object
     # this should not be used if the item type for a path is only 'l': should treat is as normal Polygon or Line2D
     path_data = []
+    endx, endy = None, None
     for item in items:
-        firstcode = Path.LINETO if len(path_data) > 0 else Path.MOVETO
+        pts = item[1:]
+        # firstcode = Path.LINETO if len(path_data) > 0 else Path.MOVETO
+        firstcode = Path.LINETO if (endx, endy) == (pts[0].x, pts[0].y) else Path.MOVETO
         if item[0] == 'c': # Bezier curve
-            pts = item[1:]
             if len(pts) == 4: # cubic
                 path_data += [
                     (firstcode, (pts[0].x, pts[0].y)),
@@ -230,15 +232,16 @@ def get_curv_path(items):
                     (Path.CURVE4, (pts[2].x, pts[2].y)),
                     (Path.CURVE4, (pts[3].x, pts[3].y)),
                     ]
+                endx, endy = (pts[3].x, pts[3].y)
             else:
                 raise NotImplementedError('only implemented cubic Bezier curve')
         elif item[0] == 'l': # line
-            pts = item[1:]
             assert len(pts) == 2
             path_data += [
                 (firstcode, (pts[0].x, pts[0].y)),
                 (Path.LINETO, (pts[1].x, pts[1].y)),
                 ]
+            endx, endy = (pts[1].x, pts[1].y)
         else:
             raise ValueError(f"unexpected item type '{item[0]}'")
     
