@@ -258,7 +258,7 @@ def _annotate(x=None, y=None, xpos=.1, ypos=.1, xtxt=None, ytxt=None, xfmt='.2f'
                     xt = xmin + xpos * dx
                 artists['htext'] = ax.text(xt, y, ytxt1, verticalalignment='center', backgroundcolor='white')
 
-    if x is not None and y is not None:
+    if plotx and ploty:
         artists['scat'] = ax.scatter(x, y, marker=marker, c='k')
 
     return artists
