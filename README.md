@@ -35,4 +35,4 @@ import vpextractor
 ```
 
 ## Notice
-A bug in version 0.1.1 causes minor errors in the extracted scatter data. If you have used 0.1.1 version, follow the steps in the [changelog](CHANGELOG.md) to fix it.
+A bug in version 0.1.1 causes minor errors in the extracted scatter data. If you have used 0.1.1 version, follow the steps in the [changelog](CHANGELOG.md#012) ("Notes" under "0.1.2") to fix it.
