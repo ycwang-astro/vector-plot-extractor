@@ -7,6 +7,8 @@ This Python package has been tested on various PDF files, including [example.pdf
 
 Documentation is currently in progress. Stay tuned for updates!
 
+**Notes: For those concerned about extraction accuracy, see the [error report](docs/Error_analysis.ipynb) for reference.**
+
 ## Dependencies
 This package mainly depends on the following packages:
 - matplotlib
