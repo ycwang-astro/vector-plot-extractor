@@ -7,7 +7,7 @@ This Python package has been tested on various PDF files, including [example.pdf
 
 Documentation is currently in progress. Stay tuned for updates!
 
-**Notes: For those concerned about extraction accuracy, see the [error report](docs/Error_analysis.ipynb) for reference.**
+<!--**Notes: For those concerned about extraction accuracy, see the [error report](docs/Error_analysis.ipynb) for reference.**-->
 
 ## Dependencies
 This package mainly depends on the following packages:
@@ -37,6 +37,9 @@ To import this package in a Python script:
 ```Python
 import vpextractor
 ```
+
+## Limitations
+It can be tricky to decide the underlying data for scatter plots. For some markers, there can be systematic errors (within the size of the markers) in the extracted data. A future version will add a UI with which you may manually select the relative position of data points for each marker.
 
 ## Notice
 A bug in version 0.1.1 causes minor errors in the extracted scatter data. If you have used 0.1.1 version, follow the steps in the [changelog](CHANGELOG.md#012) ("Notes" under "0.1.2") to fix it.
