@@ -38,8 +38,10 @@ To import this package in a Python script:
 import vpextractor
 ```
 
-## Limitations
+## Limitations/caveats
 It can be tricky to decide the underlying data for scatter plots. For some markers, there can be systematic errors (within the size of the markers) in the extracted data. A future version will add a UI with which you may manually select the relative position of data points for each marker.
+
+**It is at your discretion to verify the accuracy of the output results!**
 
 ## Notice
 A bug in version 0.1.1 causes minor errors in the extracted scatter data. If you have used 0.1.1 version, follow the steps in the [changelog](CHANGELOG.md#012) ("Notes" under "0.1.2") to fix it.
