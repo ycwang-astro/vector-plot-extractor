@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from .drawing import plot_paths, group_paths, plot_objects
 import os
 from .fileio import pdf2drawings, load_pickle, save_pickle
-from .mplui import ElementIdentifier, DataExtractor, RectObjectSelector
+from .mplui import ElementIdentifier, DataExtractor, RectObjectSelector, ObjectChecker
 from .utils import pause_and_warn
 # from copy import deepcopy
 import logging
@@ -21,6 +21,15 @@ plt.style.use('vpextractor.disable_key')
 class EmptyPathError(Exception):
     '''The `paths` is empty.'''
     pass
+
+def element_checker(paths):
+    fig, ax = plt.subplots()
+    artists, artists_in_plot, path_features = plot_paths(paths, ax=ax)
+    
+    with ObjectChecker(fig=fig, ax=ax, artists=artists, artists_in_plot=artists_in_plot, path_features=path_features) as oc:
+        plt.show()
+        oc.wait()
+    
 
 def element_identifier(paths):
     fig, ax = plt.subplot_mosaic(
@@ -65,7 +74,7 @@ def data_extractor(objects, pdf_path=None):
 def runall(pdf_path):
     drw_path = pdf_path + '.drw'
     if not os.path.exists(drw_path):
-        pdf2drawings(pdf_path)
+        pdf2drawings(pdf_path, split_broken_path=True)
     paths = load_pickle(drw_path)
     
     if len(paths) == 0:

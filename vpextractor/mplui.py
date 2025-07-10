@@ -159,7 +159,25 @@ class RectSelector(BaseEventHandler):
             return [x0, x0, x1, x1, x0], [y0, y1, y1, y0, y0]
         else:
             return [x0, x0, x1, x1], [y0, y1, y1, y0]
+
+class ObjectChecker(BaseEventHandler):
+    '''
+    click an object and show information in terminal
+    '''
+    
+    def init(self, ax, artists, artists_in_plot, path_features):
+        self.artists_in_plot = artists_in_plot
+        self.path_features = path_features
+    
+    def onpick(self, event):
+        artist = event.artist
+        idx = self.artists_in_plot.index(artist)
+        self.path_feature = self.path_features[idx]
         
+        print(f'idx = {idx}')
+        print(artist)
+        print(f'path_feature = {self.path_feature}')
+
 class ElementIdentifier(BaseEventHandler):
     def init(self, ax, artists, artists_in_plot, path_features):
         self.ax = ax
@@ -638,29 +656,33 @@ class DataExtractor(BaseEventHandler):
             
     def onsubmit(self, expression):
         if self.status in [110, 111, 120, 121]:
+            try:
+                num = float(expression)
+            except ValueError:
+                if expression:
+                    print(f'expected a number, got "{expression}"')
+                return
+            
             if self.status == 110: # setting x value
-                xdata = eval(expression)
-                if xdata != '':
-                    self.ca['x_cal']['pos'].append(self.x)
-                    self.ca['x_cal']['data'].append(xdata)
-                    self.xcals.append(annotate(x=self.x, xtxt=f'{xdata:.2g}', ax=self.ax0))
+                xdata = num
+                self.ca['x_cal']['pos'].append(self.x)
+                self.ca['x_cal']['data'].append(xdata)
+                self.xcals.append(annotate(x=self.x, xtxt=f'{xdata:.2g}', ax=self.ax0))
             elif self.status == 111: # setting y value
-                ydata = eval(expression)
-                if ydata != '':
-                    self.ca['y_cal']['pos'].append(self.y)
-                    self.ca['y_cal']['data'].append(ydata)
-                    self.ycals.append(annotate(y=self.y, ytxt=f'{ydata:.2g}', ax=self.ax0))
+                ydata = num
+                self.ca['y_cal']['pos'].append(self.y)
+                self.ca['y_cal']['data'].append(ydata)
+                self.ycals.append(annotate(y=self.y, ytxt=f'{ydata:.2g}', ax=self.ax0))
             elif self.status == 120: # editing x value
-                xdata = eval(expression)
-                if xdata != '':
-                    self.ca['x_cal']['data'][self.changecal_idx] = xdata
-                    self.xcals[self.changecal_idx]['vtext'].set_text(xdata)
+                xdata = num
+                self.ca['x_cal']['data'][self.changecal_idx] = xdata
+                self.xcals[self.changecal_idx]['vtext'].set_text(xdata)
             elif self.status == 121: # editing y value
-                ydata = eval(expression)
-                if ydata != '':
-                    self.ca['y_cal']['data'][self.changecal_idx] = ydata
-                    # print(self.ycals[self.changecal_idx]['htext'])
-                    self.ycals[self.changecal_idx]['htext'].set_text(ydata)
+                ydata = num
+                self.ca['y_cal']['data'][self.changecal_idx] = ydata
+                # print(self.ycals[self.changecal_idx]['htext'])
+                self.ycals[self.changecal_idx]['htext'].set_text(ydata)
+            
             self.set_status(100)
             self.textbox.set_active(False)
             self.textbox.set_val('')
@@ -711,6 +733,7 @@ class DataExtractor(BaseEventHandler):
         if len(xs) < 2:
             return None, None, None
         
+        # TODO: support interpolation calibration?
         # automatically choose linear or log scale, and check consistency 
         for scale, xfunc in cls.scale_func.items():
             ks = np.diff(xfunc(xds)) / np.diff(xs)

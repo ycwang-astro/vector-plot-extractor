@@ -6,9 +6,9 @@ Created on Thu Jan 18 23:26:16 2024
 """
 
 try:
-    from astrotable.utils import save_pickle, load_pickle, pause_and_warn
-    from astrotable.plot import _annotate
-except ModuleNotFoundError:
+    from pyttop.utils import save_pickle, load_pickle, pause_and_warn
+    from pyttop.plot import _annotate
+except ImportError:
     from ._utils import save_pickle, load_pickle, pause_and_warn, _annotate
 
 from functools import wraps

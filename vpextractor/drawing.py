@@ -15,7 +15,8 @@ from matplotlib.path import Path
 from matplotlib.colors import to_rgba
 import matplotlib.pyplot as plt
 import warnings
-from copy import copy
+from copy import copy, deepcopy
+from itertools import chain
 from .filter import select_paths
 from .utils import dedup
 
@@ -45,14 +46,31 @@ def get_color(artist):
     else:
         raise TypeError(type(artist))
 
-def parse_path(path):
+
+def split_broken_paths(paths):
+    split_paths = []
+    for path in paths:
+        _, item_idxs = get_coords(path['items'])
+        if len(item_idxs) > 1:
+            for i, item_idx in enumerate(item_idxs):
+                new_path = deepcopy(path)
+                new_path['items'] = [path['items'][j] for j in item_idx]
+                new_path['seqno'] = path['seqno'] + i  # make it distinct
+                split_paths.append(new_path)
+        else:
+            split_paths.append(path)
+    return split_paths
+
+def parse_path(path, split_broken=True):
     '''
-    
+    a core function that parses path
 
     Parameters
     ----------
     path : dict
         .
+    split_broken : bool
+        If True, broken paths are split to multiple objects
 
     Returns
     -------
@@ -67,7 +85,12 @@ def parse_path(path):
     items = path['items']
     item_type = np.unique([item[0] for item in items])
     item_type = set(str(i) for i in item_type)
-    coords = get_coords(items)
+    coords, item_idx = get_coords(items, split_broken=split_broken)
+    if len(item_idx) > 1:
+        raise NotImplementedError('broken path not yeat handled in parse_path')
+    else:
+        for i in [0, 1]:
+            coords[i] = list(chain(*coords[i]))
     patch_kwargs = dict(
         fill=False,
         closed=path['closePath'],
@@ -113,7 +136,7 @@ def parse_path(path):
     elif item_type == {'qu'}:
         artist = Polygon(np.vstack(coords).T, **patch_kwargs)
     else:
-        raise NotImplementedError(f'not implemented for item_type {item_type}')
+        raise ValueError(f'unrecognized item_type {item_type}')
     
     x, y = coords
     x, y = np.array(x), np.array(y)
@@ -155,8 +178,14 @@ def plot_paths(paths, ax=None):
     artists = [] # the original artists
     artists_in_plot = [] # the artists made in plot (once an artist is added, it can never be added to somewhere else)
     path_features = []
+    unrecognized_paths = []
     for path in paths:
-        item_type, coords, artist, path_feature = parse_path(path)
+        try:
+            item_type, coords, artist, path_feature = parse_path(path)
+        except ValueError:
+            raise
+            unrecognized_paths.append(path)
+            continue
         artists.append(artist)
         path_features.append(path_feature)
         artist_in_plot = copy(artist)
@@ -164,56 +193,62 @@ def plot_paths(paths, ax=None):
         # print(artist_in_plot.pickable())
         artists_in_plot.append(artist_in_plot)
     
+    if unrecognized_paths:
+        print(f'WARNING: {len(unrecognized_paths)} unrecognized elements')
+    
     ax.autoscale()
     ax.invert_yaxis()
     # ax.set_aspect('equal')
     
     return artists, artists_in_plot, path_features
 
-def get_coords(items):
+def get_coords(items, split_broken=True):
     # get points that the shape goes through
-    xs = []
-    ys = []
+    xs = [[]]
+    ys = [[]]
     x, y = None, None
-    for item in items:
+    item_idx = [[]]
+    for itemi, item in enumerate(items):
         if item[0] == 'c': # Bezier curve
             pts = item[1:]
             if len(pts) == 4: # cubic
                 pts = [pts[0], pts[3]]
             else:
                 raise NotImplementedError()
-            for pt in pts:
-                if (x, y) == (pt.x, pt.y):
-                    continue
-                x, y = pt.x, pt.y
-                xs.append(x)
-                ys.append(y)
+            
         elif item[0] == 're': #rectangle
             rect = item[1]
             x0, x1, y0, y1 = rect.x0, rect.x1, rect.y0, rect.y1
-            xs += [x0, x1, x1, x0, x0]
-            ys += [y0, y0, y1, y1, y0]
+            xs[-1] += [x0, x1, x1, x0, x0]
+            ys[-1] += [y0, y0, y1, y1, y0]
         elif item[0] == 'qu': # quad
             quad = item[1]
             pts = [quad.ul, quad.ur, quad.lr, quad.ll]
-            for pt in pts:
-                if (x, y) == (pt.x, pt.y):
-                    continue
-                x, y = pt.x, pt.y
-                xs.append(x)
-                ys.append(y)
         elif item[0] == 'l':
             pts = item[1:]
-            for pt in pts:
-                if (x, y) == (pt.x, pt.y):
-                    continue
-                x, y = pt.x, pt.y
-                xs.append(x)
-                ys.append(y)
         else:
             raise NotImplementedError()
+            
+        if item[0] in ['c', 'qu', 'l']:
+            for pti, pt in enumerate(pts):
+                if (x, y) == (pt.x, pt.y): # same location as the last point
+                    continue
+                elif pti == 0 and itemi >= 1: 
+                    # the starting point but not the same location as the last point: broken path
+                    # xs.append(None)
+                    # ys.append(None)
+                    xs.append([])
+                    ys.append([])
+                    item_idx.append([])
+                x, y = pt.x, pt.y
+                xs[-1].append(x)
+                ys[-1].append(y)
+        item_idx[-1].append(itemi)
     
-    return xs, ys
+    if not split_broken:
+        return (list(chain(*xs)), list(chain(*ys))), None
+    
+    return [xs, ys], item_idx
 
 def get_curv_path(items):
     # get matplotlib.path.Path object
@@ -267,10 +302,18 @@ def mean_getter(coords):
     assert np.max(counts) == 1 # there should not be any duplicate point now!
     return np.mean(xs), np.mean(ys)
 
+def minmax_getter(coords):
+    xs, ys = coords
+    x0, x1 = np.min(xs), np.max(xs)
+    y0, y1 = np.min(ys), np.max(ys)
+    return (x0 + x1) / 2, (y0 + y1) / 2    
+
 def group_paths(paths, typestr=None, markers=None, marker_getter='mean', mode='typestr'):
     # marker_getter: method to get the position of the marker if arg `marker` do not contain center information
     if marker_getter == 'mean': #simply use mean of coords as position
         marker_getter = mean_getter
+    elif marker_getter == 'minmax':
+        marker_getter = minmax_getter
     else:
         return ValueError()
     
@@ -291,8 +334,14 @@ def group_paths(paths, typestr=None, markers=None, marker_getter='mean', mode='t
         scatter_artists = []
         idx0 = -1
         scatter_coords = []
+        unrecognized_paths = []
         for path, typ in zip(paths, typestr):
-            item_type, coords, artist, path_feature = parse_path(path)
+            try:
+                item_type, coords, artist, path_feature = parse_path(path)
+            except ValueError:
+                raise
+                unrecognized_paths.append(path)
+                continue
 
             if typ == 's':
                 idx = select_paths(path_feature, marker_features, match_modes)
@@ -336,6 +385,9 @@ def group_paths(paths, typestr=None, markers=None, marker_getter='mean', mode='t
             elif typ == 'd':
                 continue
                 
+        if unrecognized_paths:
+            print(f'WARNING: {len(unrecognized_paths)} unrecognized elements')
+
     else:
         raise ValueError
     
