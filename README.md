@@ -5,7 +5,7 @@ tools for extracting data from vector plots
 
 This Python package has been tested on various PDF files, including [example.pdf](examples/example.pdf), under normal usage conditions. However, it has not undergone comprehensive testing and optimization yet. I will improve it in the future. Your suggestions and contributions are welcome.
 
-Documentation is currently in progress. Stay tuned for updates!
+A step-by-step [tutorial](docs/tutorial-en.md) is provided to demonstrate typical usage of the tool.
 
 <!--**Notes: For those concerned about extraction accuracy, see the [error report](docs/Error_analysis.ipynb) for reference.**-->
 
