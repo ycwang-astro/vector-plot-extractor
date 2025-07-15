@@ -1,7 +1,7 @@
 # vector-plot-extractor
 tools for extracting data from vector plots
 
-[![PyPI version](https://badge.fury.io/py/vector-plot-extractor.svg)](https://badge.fury.io/py/vector-plot-extractor) [![DOI](https://zenodo.org/badge/747124676.svg)](https://zenodo.org/doi/10.5281/zenodo.10588057)
+[![PyPI version](https://badge.fury.io/py/vector-plot-extractor.svg)](https://badge.fury.io/py/vector-plot-extractor) [![DOI:10.5281/zenodo.10588057](https://zenodo.org/badge/DOI/10.5281/zenodo.10588057.svg)](https://zenodo.org/doi/10.5281/zenodo.10588057)
 
 This Python package has been tested on various PDF files, including [example.pdf](examples/example.pdf), under normal usage conditions. However, it has not undergone comprehensive testing and optimization yet. I will improve it in the future. Your suggestions and contributions are welcome.
 
