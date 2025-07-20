@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.1.4
+### Improvements
+- Improved support for cases where multiple plot elements are in the same path
+- Improved handling of axis value inputs for better experience and increased safety
+
 ## 0.1.3
 ### Bugs fixed
 - Fix "bottom-left" position of Matplotlib `Rectangle`. This bug affects `.sel.obj` files, and results in an offset in all rectangles in the plot. 2nd step need to be re-run ("Re-selecting") to fix `.sel.obj`. It seems that other files, including the exported data, are not affected by this bug.
